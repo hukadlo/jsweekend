@@ -7,18 +7,26 @@ import gql from 'graphql-tag';
 import { graphql } from 'react-apollo';
 import React from 'react';
 import moment from 'moment';
+
 import type { Element } from 'react';
 
 type TProps = {
-    allFlights?: Object[],
+    allFlights: Object[],
     date?: string,
-    flights?: Object[],
     from: string,
     hasNextPage?: Boolean,
     loadMoreItems?: Function,
     loading?: Boolean,
     to: string,
+    error?: Object,
 };
+
+type TLocation = {
+    airport: {
+        name: string,
+    },
+    time: string,
+}
 
 type TItem = {
     node: {
@@ -26,13 +34,17 @@ type TItem = {
         price: {
             amount: number,
             currency: string,
-        }
+        },
+        departure: TLocation,
+        arrival: TLocation,
     }
 }
 
 class FlightList extends React.Component<TProps> {
     props: TProps;
     _style: Object;
+
+    FORMAT:string = 'MM-DD-YYYY HH:mm';
 
     constructor(props: TProps) {
         super(props);
@@ -60,23 +72,20 @@ class FlightList extends React.Component<TProps> {
         };
     }
 
-    shouldComponentUpdate(nextProps: TProps) {
-        return true;
-    }
     renderFlights(): Element<'div'>[] {
         let items: Element<'div'>[] = [];
 
-        if (this.props.flights) {
-            items = this.props.flights.map((item: TItem): Element<'div'> => {
+        if (this.props.allFlights) {
+            items = this.props.allFlights.map((item: TItem): Element<'div'> => {
 
                 return <div key={item.node.id} style={this._style.container}>
                         <div>
-                            <div style={this._style.date}>Departure: {moment(item.node.departure.time).format('MM-DD-YYYY HH:m')}</div>
+                            <div style={this._style.date}>Departure: {moment(item.node.departure.time).format(this.FORMAT)}</div>
                             <div style={this._style.flightDescription}> - {item.node.departure.airport.name}</div>
                         </div>
                         <br />
                         <div>
-                            <div style={this._style.date}>Arrival: {moment(item.node.arrival.time).format('MM-DD-YYYY HH:m')}</div>
+                            <div style={this._style.date}>Arrival: {moment(item.node.arrival.time).format(this.FORMAT)}</div>
                             <div style={this._style.flightDescription}> - {item.node.arrival.airport.name}</div>
                         </div>
                         <div key={item.node.id} style={this._style.price}>{`${item.node.price.amount} ${item.node.price.currency}`}</div>
@@ -88,7 +97,12 @@ class FlightList extends React.Component<TProps> {
     }
 
     render(): Element<'div'> {
-        if (!this.props.flights && this.props.submitted && !this.props.loading) {
+        if (this.props.error) {
+            // TODO: show more friendly error to the user
+            return (<div>{this.props.error.message}</div>)
+        }
+
+        if (!this.props.allFlights.length && !this.props.loading) {
             return (<div>No flights available</div>)
         }
 
@@ -104,7 +118,7 @@ class FlightList extends React.Component<TProps> {
 
 export default graphql(gql`
     query  allFlights($from: [LocationInput!]!, $to: [LocationInput!]!, $date: DateInput!,$after: String) {
-        allFlights(search: {from: $from, to: $to, date: $date}, first:10, after: $after, options: { currency: EUR }) {
+        allFlights(search: {from: $from, to: $to, date: $date}, first:5, after: $after, options: { currency: EUR }) {
         pageInfo {
             hasNextPage
             endCursor
@@ -138,7 +152,7 @@ export default graphql(gql`
     }
     `, {
         skip: (ownProps: TProps) => {
-            return !(ownProps.from && ownProps.to && ownProps.date && ownProps.submitted);
+            return !(ownProps.from && ownProps.to && ownProps.date);
         },
         // load parameters for request
         options: (ownProps: TProps) => {
@@ -153,36 +167,37 @@ export default graphql(gql`
                 notifyOnNetworkStatusChange: true,
             };
         },
-        props: ({ ownProps: TProps, data: { error, allFlights, fetchMore, loading, variables } }) => {
-        const hasNextPage:Boolean = _.get(allFlights, 'pageInfo.hasNextPage');
-        return {
-            flights: _.get(allFlights, 'edges'),
-            hasNextPage,
-            loading,
-            loadMoreItems: () => {
-                if (loading || !hasNextPage) {
-                    return null;
-                }
+        props: ({ ownProps: TProps, data: { error, allFlights, fetchMore, loading } }) => {
+            const hasNextPage:Boolean = _.get(allFlights, 'pageInfo.hasNextPage');
+            return {
+                allFlights: _.get(allFlights, 'edges') || [],
+                hasNextPage,
+                loading,
+                error,
+                loadMoreItems: () => {
+                    if (loading || !hasNextPage) {
+                        return null;
+                    }
 
-                return fetchMore({
-                    variables: {
-                        after: allFlights.pageInfo.endCursor,
-                        notifyOnNetworkStatusChange: true,
-                    },
-                    updateQuery: (previousResult, { fetchMoreResult }): Object => {
-                        if (!fetchMoreResult || !fetchMoreResult.allFlights.edges) { return previousResult; }
-                        return Object.assign({}, previousResult, {
-                            allFlights: {
-                                edges: [
-                                    ...previousResult.allFlights.edges,
-                                    ...fetchMoreResult.allFlights.edges,
-                                ],
-                                pageInfo: fetchMoreResult.allFlights.pageInfo,
-                            },
-                        });
-                    },
-                });
-            },
-        };
-    },
+                    return fetchMore({
+                        variables: {
+                            after: allFlights.pageInfo.endCursor,
+                            notifyOnNetworkStatusChange: true,
+                        },
+                        updateQuery: (previousResult, { fetchMoreResult }): Object => {
+                            if (!fetchMoreResult || !fetchMoreResult.allFlights.edges) { return previousResult; }
+                            return Object.assign({}, previousResult, {
+                                allFlights: {
+                                    edges: [
+                                        ...previousResult.allFlights.edges,
+                                        ...fetchMoreResult.allFlights.edges,
+                                    ],
+                                    pageInfo: fetchMoreResult.allFlights.pageInfo,
+                                },
+                            });
+                        },
+                    });
+                },
+            };
+        },
 })(FlightList);
