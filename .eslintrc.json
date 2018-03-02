@@ -1,0 +1,66 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": ["eslint:recommended", "airbnb"],
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true,
+            "jsx": true,
+            "arrowFunctions": true
+        },
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "react-native"
+    ],
+    "rules": {
+        "no-tabs": ["off"],
+        "indent": [
+           "error",
+           4,
+           { "SwitchCase": 1 }
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-unused-vars": ["warn", { "vars": "all", "args": "after-used" }],
+        "arrow-body-style": ["error", "always"],
+        "eqeqeq": ["warn", "always"],
+        "no-use-before-define": ["warn", { "functions": true, "classes": true }],
+        "no-useless-constructor": "warn",
+        "no-underscore-dangle": "off",
+        "max-len": "off",
+        "no-nested-ternary": "off",
+        "class-methods-use-this": "off",
+        "no-unused-expressions": [1, { "allowShortCircuit": true }],
+        "no-mixed-operators": ["error", { "groups": [
+            ["&", "|", "^", "~", "<<", ">>", ">>>"],
+            ["==", "!=", "===", "!==", ">", ">=", "<", "<="],
+            ["&&", "||"],
+            ["in", "instanceof"]
+        ]}],
+
+        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+         "react/sort-comp": ["warn", { "order": ["static-methods", "type-annotations", "lifecycle", "everything-else", "render" ]}],
+        "react-native/no-unused-styles": "warn",
+        "react-native/split-platform-components": "error",
+        "react-native/no-inline-styles": "warn",
+        "react-native/no-color-literals": "error",
+        "react/prefer-stateless-function": "warn",
+        "react/jsx-indent": ["error", 4],
+        "react/jsx-indent-props": ["error", 4]
+    }
+}
