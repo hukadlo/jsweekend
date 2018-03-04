@@ -46,6 +46,10 @@ class FlightList extends React.Component<TProps> {
 
     FORMAT:string = 'MM-DD-YYYY HH:mm';
 
+    /**
+     * @constructor
+     * @param  {TProps} props
+     */
     constructor(props: TProps) {
         super(props);
 
@@ -95,7 +99,10 @@ class FlightList extends React.Component<TProps> {
 
         return items;
     }
-
+    /**
+     *  Renders form with results of search
+     * @returns Flight
+     */
     render(): Element<'div'> {
         if (this.props.error) {
             // TODO: show more friendly error to the user
@@ -174,9 +181,9 @@ export default graphql(gql`
                 hasNextPage,
                 loading,
                 error,
-                loadMoreItems: () => {
+                loadMoreItems: (): void => {
                     if (loading || !hasNextPage) {
-                        return null;
+                        return;
                     }
 
                     return fetchMore({

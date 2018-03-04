@@ -21,6 +21,11 @@ type TState = {
     cities?: Object[],
 }
 export default class SelectBox extends React.Component<TProps, TState> {
+
+    /**
+     * @constructor
+     * @param  {TProps} props
+     */
     constructor(props: TProps) {
         super(props);
 
@@ -38,16 +43,27 @@ export default class SelectBox extends React.Component<TProps, TState> {
         this.setState({ cities: nextProps.cities });
     }
 
+    /**
+     * This method is called everytime when some change on
+     * inpu is made and set value of local state to new value.
+     * If callback has been set in props, will call it also.
+     * @param  {event} input event
+     * @returns void
+     */
     onChange = (event: any, { newValue }: string) => {
-        // FIXME: not really nice to do it like this
+        // TODO: do it some other way...
         this.setState({
             value: event.target.value || event.target.innerText,
         });
 
-        // FIXME: better propagate data to upper component
         this.props.onChange && this.props.onChange({value: this.state.value, id: this.props.id});
     };
 
+    /**
+     * Filtres all suggestions
+     * @param  {string} value to filter
+     * @returns {Aray<Object>} Array of cities which match value
+     */
     getSuggestions = (value: string): Object[] => {
         const inputValue: string = value.trim().toLowerCase();
         const inputLength: number = inputValue.length;
@@ -61,30 +77,41 @@ export default class SelectBox extends React.Component<TProps, TState> {
         );
     };
 
-    // Autosuggest will call this function every time you need to update suggestions.
+    /**
+     * Autosuggest will call this function every time you need to update suggestions.
+     * @param  {string} value to filter
+     * @returns void
+     */
     onSuggestionsFetchRequested = ({ value }: {value: string}): void => {
         this.setState({
             suggestions: this.getSuggestions(value),
         });
     };
 
-    // Autosuggest will call this function every time you need to clear suggestions.
+    /**
+     *  Autosuggest will call this function every time you need to clear suggestions.
+     * @returns void
+     */
     onSuggestionsClearRequested = (): void => {
         this.setState({
             suggestions: [],
         });
     };
 
+    /**
+     *  Renders suggestion
+     * @returns div element with name of suggestion
+     */
     renderSuggestion(suggestion: Object):Element<'div'> {
         return (<div>
             {suggestion.node.name}
         </div>);
     };
 
-    getSuggestionValue(suggestion: Object) {
-        return suggestion.node.name;
-    };
-
+    /**
+     *  Renders autosuggest input field
+     * @returns Autosuggest component wrapped with div
+     */
     render() {
         const { value, suggestions } = this.state;
 
@@ -102,7 +129,7 @@ export default class SelectBox extends React.Component<TProps, TState> {
                     suggestions={suggestions}
                     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
                     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-                    getSuggestionValue={this.getSuggestionValue}
+                    getSuggestionValue={(suggestion: Object) => suggestion.node.name}
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
                 />

@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import './index.css';
 import { ApolloProvider } from 'react-apollo';
 
 import { ApolloClient } from 'apollo-client';

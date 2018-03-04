@@ -52,9 +52,9 @@ class App extends React.Component<TProps, TState> {
         const inputId: string = event.id || event.target.id;
 
         switch (inputId) {
-            case "from": newState = { from: event.value }; break;
-            case "to": newState = { to: event.value }; break;
-            case "date": newState = { date: event.target.value }; break;
+            case 'from': newState = { from: event.value }; break;
+            case 'to': newState = { to: event.value }; break;
+            case 'date': newState = { date: event.target.value }; break;
         }
         this.setState( {...newState, submitted: false} );
     }
@@ -83,10 +83,14 @@ class App extends React.Component<TProps, TState> {
         );
     }
 
+    /**
+     * Method renders form with 3 inputs and results of search after submit
+     * @returns Flight
+     */
     render(): Element<'div'> {
         return (
-            // FIXME: style should not be here
-            <div style={{ "margin": "200px" }}>
+            // FIXME: style should not be here (styledComponent)
+            <div style={{ 'margin': '200px' }}>
                 <form onSubmit={this.handleSubmit}>
                 <label>
                     <SelectBox
@@ -99,8 +103,9 @@ class App extends React.Component<TProps, TState> {
                         cities={this.props.cities}
                         id='to'
                         placeholder='type destination'/>
+                    {/* TODO: use datepicker */}
                     Date:
-                    <input type='text' id="date" value={this.state.date} onChange={this.handleChange} />
+                    <input type='text' id='date' value={this.state.date} onChange={this.handleChange} />
                 </label>
                 <input type='submit' value='SEARCH FLIGHTS' />
                 </form>
@@ -126,8 +131,8 @@ export default graphql(gql`
     }
     `,{
         props: ({ ownProps: TProps, data: { error, allLocations } }) => {
-        return {
-            cities: allLocations && allLocations.edges,
-        };
+            return {
+                cities: allLocations && allLocations.edges,
+            };
     },
 })(App);
